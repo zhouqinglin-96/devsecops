@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: contoso-traders-products
+spec:
+  #Note: The '{AKS_REPLICAS}' token will be substituted by the github workflow.
+  replicas: {AKS_REPLICAS}
+  selector:
+    matchLabels:
+      app: contoso-traders-products
+  template:
+    metadata:
+      labels:
+        app: contoso-traders-products
+    spec:
+      nodeSelector:
+        "kubernetes.io/os": linux
+      containers:
+        - name: contoso-traders-products
+          #Note: The '{SUFFIX}' token will be substituted with the value of the SUFFIX github variable by github workflow.
+          image: contosotradersacr{SUFFIX}.azurecr.io/contosotradersapiproducts:latest
+          env:
+            - name: KeyVaultEndpoint
+              valueFrom:
+                secretKeyRef:
+                  name: contoso-traders-kv-endpoint
+                  key: contoso-traders-kv-endpoint
+            - name: ManagedIdentityClientId
+              valueFrom:
+                secretKeyRef:
+                  name: contoso-traders-mi-clientid
+                  key: contoso-traders-mi-clientid
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              #Note: The '{AKS_CPU_LIMIT}', '${AKS_MEMORY_LIMIT}' tokens will be substituted by the github workflow.
+              cpu: {AKS_CPU_LIMIT}
+              memory: {AKS_MEMORY_LIMIT}
